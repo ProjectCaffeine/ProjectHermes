@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"net"
 	"log"
+	"net"
 )
 
 func main() {
@@ -13,18 +13,27 @@ func main() {
 		log.Fatal("Failed to open TCP connection")
 	}
 
-	fmt.Print("Opening connection on port 8080")
+	defer ln.Close()
+	fmt.Print("Opening connection on port 8080\n")
 	for {
 		conn, err := ln.Accept()
 
 		if err != nil {
-			log.Fatal("Failed to accept connection")
+			log.Fatal("Failed to accept connection\n")
 		}
 
+		buffer := make([]byte, 2056)
+		n, err := conn.Read(buffer)
+
+		if err != nil {
+			log.Fatal("Failed to read data.")
+		}
+
+		fmt.Printf("Received:\n %s", buffer[:n])
 		conn.Close()
 		break;
 	}
 
-	fmt.Print("Closing connection")
+	fmt.Print("Closing connection\n")
 	ln.Close()
 }
