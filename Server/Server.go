@@ -6,6 +6,14 @@ import (
 	"net"
 )
 
+type RequestData struct {
+	RequestType string
+	Path string 
+	Host string 
+	UserAgent string 
+	Accept string
+}
+
 func main() {
 	ln, err := net.Listen("tcp", ":8080")
 
@@ -22,6 +30,7 @@ func main() {
 			log.Fatal("Failed to accept connection\n")
 		}
 
+		defer conn.Close()
 		buffer := make([]byte, 2056)
 		n, err := conn.Read(buffer)
 
@@ -29,11 +38,25 @@ func main() {
 			log.Fatal("Failed to read data.")
 		}
 
-		fmt.Printf("Received:\n %s", buffer[:n])
+		textString := string(buffer[:n])
+
+		//sendBuffer := make([]byte, 2056)
+
+		//conn.Write(sendBuffer)
+
+		fmt.Printf("Received:\n %s", textString)
 		conn.Close()
 		break;
 	}
 
 	fmt.Print("Closing connection\n")
 	ln.Close()
+}
+
+func parseRequest(buffer []byte, dataEnd int)(RequestData)  {
+	data := RequestData{}
+
+	
+
+	return data
 }
