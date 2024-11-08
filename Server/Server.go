@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net"
@@ -23,32 +24,50 @@ func main() {
 	}
 
 	defer ln.Close()
-	fmt.Print("Opening connection on port 8080\n")
 	for {
 		conn, err := ln.Accept()
 
-		if err != nil {
-			log.Fatal("Failed to accept connection\n")
+		if err != nil || conn == nil {
+			log.Fatal("Could not accept connection")
 		}
 
-		defer conn.Close()
-		buffer := make([]byte, 2056)
-		n, err := conn.Read(buffer)
+		go handleConnection(ln, conn)
+		//defer conn.Close()
+		//buffer := make([]byte, 2056)
+		//n, err := conn.Read(buffer)
 
-		if err != nil {
-			log.Fatal("Failed to read data.")
-		}
+		//if err != nil {
+		//	log.Fatal("Failed to read data.")
+		//}
 
-		//sendBuffer := make([]byte, 2056)
-		parseRequest(buffer, n)
+		//parseRequest(buffer, n)
 
-		//fmt.Printf("Received:\n%s", textString)
-		conn.Close()
-		break;
+		////fmt.Printf("Received:\n%s", textString)
+		//conn.Close()
+		//break;
 	}
 
 	fmt.Print("Closing connection\n")
 	ln.Close()
+}
+
+func handleConnection(ln net.Listener, conn net.Conn) {
+	defer conn.Close()
+
+	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
+
+	for {
+		req, err := rw.ReadString('\n')
+
+		if err != nil {
+			rw.WriteString("failed to read input")
+			rw.Flush()
+			return
+		}
+
+		rw.WriteString(fmt.Sprintf("Request received: %s", req))
+		rw.Flush()
+	}
 }
 
 func parseRequest(buffer []byte, dataEnd int)(RequestData)  {
