@@ -17,6 +17,31 @@ type RequestData struct {
 }
 
 func main() {
+	runMainServer()
+
+}
+
+func runMainServer() {
+	ln, err := net.Listen("tcp", ":8080")
+
+	if err != nil {
+		log.Fatal("Failed to open TCP connection")
+	}
+
+	defer ln.Close()
+
+	for {
+		conn, err := ln.Accept()
+
+		if err != nil || conn == nil {
+			log.Fatal("Could not accept connection")
+		}
+
+		go handleConnection(ln, conn)
+	}
+}
+ 
+func runParrotServer() {
 	ln, err := net.Listen("tcp", ":8080")
 
 	if err != nil {
@@ -31,27 +56,13 @@ func main() {
 			log.Fatal("Could not accept connection")
 		}
 
-		go handleConnection(ln, conn)
-		//defer conn.Close()
-		//buffer := make([]byte, 2056)
-		//n, err := conn.Read(buffer)
-
-		//if err != nil {
-		//	log.Fatal("Failed to read data.")
-		//}
-
-		//parseRequest(buffer, n)
-
-		////fmt.Printf("Received:\n%s", textString)
-		//conn.Close()
-		//break;
+		go handleParrotConnection(ln, conn)
 	}
 
-	fmt.Print("Closing connection\n")
 	ln.Close()
 }
 
-func handleConnection(ln net.Listener, conn net.Conn) {
+func handleParrotConnection(ln net.Listener, conn net.Conn) {
 	defer conn.Close()
 
 	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
@@ -68,6 +79,19 @@ func handleConnection(ln net.Listener, conn net.Conn) {
 		rw.WriteString(fmt.Sprintf("Request received: %s", req))
 		rw.Flush()
 	}
+}
+
+func handleConnection(ln net.Listener, conn net.Conn) {
+	defer conn.Close()
+
+	buffer := make([]byte, 2056)
+	n, err := conn.Read(buffer)
+
+	if err != nil {
+		log.Fatal("Failed to read data.")
+	}
+
+	parseRequest(buffer, n)
 }
 
 func parseRequest(buffer []byte, dataEnd int)(RequestData)  {
