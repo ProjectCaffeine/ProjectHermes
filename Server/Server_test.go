@@ -13,7 +13,7 @@ func TestMainServerConnection(t *testing.T) {
 		want []byte
 	} {
 		{
-			`Sending a GET Request displays tokens`,
+			"Sending a GET Request displays tokens",
 			[]byte(`GET /test HTTP/1.1
 Host: 127.0.0.1:8080
 User-Agent: curl/7.81.0

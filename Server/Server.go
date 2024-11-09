@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strings"
 	//"strings"
 )
 
 type RequestData struct {
-	RequestType string
-	Path string 
-	Host string 
-	UserAgent string 
-	Accept string
+	HttpMethod string
+	RequestTarget string 
+	HttpVersion string
+	Headers map[string]string
 }
 
 func main() {
@@ -84,47 +84,71 @@ func handleParrotConnection(ln net.Listener, conn net.Conn) {
 func handleConnection(ln net.Listener, conn net.Conn) {
 	defer conn.Close()
 
-	buffer := make([]byte, 2056)
-	n, err := conn.Read(buffer)
+	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
 
-	if err != nil {
-		log.Fatal("Failed to read data.")
-	}
-
-	parseRequest(buffer, n)
+	parseRequest(rw)
 }
 
-func parseRequest(buffer []byte, dataEnd int)(RequestData)  {
-	data := RequestData{}
-	getTokens(buffer, dataEnd)
+func parseRequest(rw *bufio.ReadWriter)(RequestData)  {
+	data := processHeaderLine(rw)
+	//getTokens(rw)
+
+	fmt.Printf("Method: '%s'\nTarget: '%s'\nVersion: '%s'\n", data.HttpMethod, data.RequestTarget, data.HttpVersion)
+
+	data.Headers = getHeaders(rw)
+
+	for k := range data.Headers {
+		fmt.Printf("Key: '%s'\nValue: '%s'\n", k, data.Headers[k])
+	}
+	
 
 	return data
 }
 
-func getTokens(buffer []byte, dataEnd int)([]string)  {
-	textString := string(buffer[:dataEnd])
-	tokens := []string{}
-	startIndex := 0
+func processHeaderLine(rw *bufio.ReadWriter)(RequestData) {
+	data := RequestData{}
+	firstLine, err := rw.ReadBytes('\n')
 
-	for i, v := range(textString) {
-		if v == ' ' {
-			foundToken := textString[startIndex:i]
-			tokens = append(tokens, foundToken)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-			if i < len(textString) - 1 {
-				startIndex = i + 1
-			}
-		} else if i == len(textString) - 1 {
-			foundToken := textString[startIndex:i]
-			tokens = append(tokens, foundToken)
+	headerLineProperties := strings.Split(string(firstLine), " ")
+	cleanedVersion := strings.TrimSuffix(headerLineProperties[2], "\r\n")
+	cleanedVersion = strings.TrimSuffix(cleanedVersion, "\n")
+
+	data.HttpMethod = headerLineProperties[0]
+	data.RequestTarget = headerLineProperties[1]
+	data.HttpVersion = cleanedVersion
+
+	return data
+}
+
+func getHeaders(rw *bufio.ReadWriter)(map[string]string)  {
+	results := make(map[string]string)
+	scanner := bufio.NewScanner(rw.Reader)
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		lineText := scanner.Text()
+
+		if lineText == "" {
+			break
 		}
+
+		var delim string
+		colonAndSpaceIdx := strings.Index(lineText, ": ")
+		colonIdx := strings.Index(lineText, ":")
+		
+		if colonAndSpaceIdx == colonIdx {
+			delim = ": "
+		} else {
+			delim = ":"
+		}
+
+		splitHeaders := strings.SplitN(lineText, delim, 2)
+		results[splitHeaders[0]] = splitHeaders[1]
 	}
 
-	for _, v := range(tokens) {
-		fmt.Printf("%s\n", v)
-	}
-
-	fmt.Printf("\n\n\n%s", textString)
-
-	return tokens
+	return results
 }
