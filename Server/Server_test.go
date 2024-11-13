@@ -30,6 +30,32 @@ Accept: */*`)
 	Equal(t, len(headers), 4)
 }
 
+func TestValidateHeaderFile(t *testing.T) {
+	tt := []struct {
+		test string
+		data RequestData
+		want int
+	} {
+		{
+			"Sending a GET",
+			RequestData{HttpMethod: "GET"},
+			200,
+		},
+		{
+			"Sending a POST",
+			RequestData{HttpMethod: "POST"},
+			405,
+		},
+	}
+
+	for _, tc := range tt {
+
+		t.Run(tc.test, func(t *testing.T) {
+			Equal(t, validateHeaderRecords(&tc.data), tc.want)
+		})
+	}
+}
+
 func TestMainServerConnection(t *testing.T) {
 	tt := []struct {
 		test string 
