@@ -91,16 +91,13 @@ func handleConnection(ln net.Listener, conn net.Conn) {
 
 func parseRequest(rw *bufio.ReadWriter)(RequestData)  {
 	data := processHeaderLine(rw)
-	//getTokens(rw)
+	data.Headers = getHeaders(rw)
 
 	fmt.Printf("Method: '%s'\nTarget: '%s'\nVersion: '%s'\n", data.HttpMethod, data.RequestTarget, data.HttpVersion)
-
-	data.Headers = getHeaders(rw)
 
 	for k := range data.Headers {
 		fmt.Printf("Key: '%s'\nValue: '%s'\n", k, data.Headers[k])
 	}
-	
 
 	return data
 }

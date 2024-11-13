@@ -1,10 +1,34 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"net"
+	"os"
 	"testing"
 )
+
+type Writer int
+
+func TestGetHeaders(t *testing.T) {
+	testData := []byte(`GET /test HTTP/1.1
+Host: 127.0.0.1:8080
+User-Agent: curl/7.81.0
+Accept: */*`)
+	bw := bufio.NewWriter(os.Stdout)
+	br := bufio.NewReader(bytes.NewReader(testData))
+	rw := bufio.NewReadWriter(br, bw)
+	reqData := processHeaderLine(rw)
+
+	Equal(t, reqData.HttpMethod, "GET" )
+	//if reqData.HttpMethod != "GET" {
+	//	t.Errorf("Expected HTTP Method: GET, got: %s", reqData.HttpMethod)
+	//}
+
+	headers := getHeaders(rw)
+
+	Equal(t, len(headers), 4)
+}
 
 func TestMainServerConnection(t *testing.T) {
 	tt := []struct {
