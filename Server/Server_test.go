@@ -46,6 +46,11 @@ func TestValidateHeaderFile(t *testing.T) {
 			RequestData{HttpMethod: "POST"},
 			405,
 		},
+		{
+			"Sending a POST",
+			RequestData{},
+			405,
+		},
 	}
 
 	for _, tc := range tt {
