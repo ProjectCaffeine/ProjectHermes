@@ -3,11 +3,17 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"strconv"
 	"log"
 	"net"
 	"strings"
-	//"strings"
 )
+
+type ResponseData struct {
+	HttpVersion string
+	ResponseCode int 
+	ResponsePhrase string
+}
 
 type RequestData struct {
 	HttpMethod string
@@ -47,7 +53,27 @@ func handleConnection(ln net.Listener, conn net.Conn) {
 
 	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
 
-	parseRequest(rw)
+	reqData := parseRequest(rw)
+	statusCode, statusMessage := validateHeaderRecords(&reqData)
+
+	buildResponse(&reqData, statusCode, statusMessage, rw)
+}
+
+func buildResponse(reqData *RequestData, statusCode int, statusMessage string, rw *bufio.ReadWriter) {
+
+	rw.Write([]byte("HTTP-VERSION = " + reqData.HttpVersion))
+	rw.Write([]byte(" " + strconv.Itoa(statusCode)))
+	rw.Write([]byte(" " + statusMessage))
+	rw.Write([]byte("\n"))
+
+	//return headers go here
+
+	rw.Write([]byte("\r\n"))
+	rw.Write([]byte("\n"))
+	
+	//data goes here
+
+	rw.Flush()
 }
 
 func parseRequest(rw *bufio.ReadWriter)(RequestData)  {
@@ -111,11 +137,10 @@ func getHeaders(rw *bufio.ReadWriter)(map[string]string)  {
 	return results
 }
 
-func validateHeaderRecords(data *RequestData) (int)  {
+func validateHeaderRecords(data *RequestData) (int, string)  {
 	if data.HttpMethod != "GET" {
-		return 405
+		return 405, "Method Not Allowed"
 	}
 
-
-	return 200
+	return 200, "Ok"
 }
