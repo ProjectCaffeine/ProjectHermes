@@ -1,4 +1,4 @@
-module ProjectHermes/Server
+module github.com/ProjectCaffeine/ProjectHermes
 
 go 1.18
 
