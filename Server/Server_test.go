@@ -56,7 +56,9 @@ func TestValidateHeaderFile(t *testing.T) {
 	for _, tc := range tt {
 
 		t.Run(tc.test, func(t *testing.T) {
-			Equal(t, validateHeaderRecords(&tc.data), tc.want)
+			returnCode, _ := validateHeaderRecords(&tc.data)
+
+			Equal(t, returnCode, tc.want)
 		})
 	}
 }

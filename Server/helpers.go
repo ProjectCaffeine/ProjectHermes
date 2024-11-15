@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"testing"
+	"log"
+)
 
 func Equal[V comparable](t *testing.T, got, expected V) {
 	t.Helper()
@@ -14,5 +17,11 @@ func Equal[V comparable](t *testing.T, got, expected V) {
 			expected:
 			%v
 			)`, got, expected)
+	}
+}
+
+func checkForError(err error) {
+	if err != nil {
+		log.Fatal(err)
 	}
 }
