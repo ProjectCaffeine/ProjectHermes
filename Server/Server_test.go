@@ -71,10 +71,10 @@ func TestMainServerConnection(t *testing.T) {
 	} {
 		{
 			"Sending a GET Request displays tokens",
-			[]byte(`GET /test HTTP/1.1
+			[]byte(`GET / HTTP/1.1
 Host: 127.0.0.1:8080
 User-Agent: curl/7.81.0
-Accept: */*`),
+Accept: */*\r\n`),
 			[]byte("Request received: hello world"),
 		},
 	}
@@ -96,6 +96,7 @@ Accept: */*`),
 			out := make([]byte, 1024)
 
 			if _, err := conn.Read(out); err == nil {
+				t.Error(out)
 				if bytes.Compare(out, tc.want) == 0 {
 					t.Error("response did match expected output")
 				}

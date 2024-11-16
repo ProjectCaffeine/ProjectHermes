@@ -6,7 +6,8 @@ import (
 )
 
 func TestGetIndex(t *testing.T) {
-	data := string(getIndex())
+	indexData, _ := getIndex()
+	data := string(indexData)
 
 	if !strings.Contains(data, "Hello World") {
 		t.Error(data)

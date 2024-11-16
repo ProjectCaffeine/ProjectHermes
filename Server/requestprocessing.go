@@ -8,14 +8,16 @@ import (
 )
 
 func parseRequest(rw *bufio.ReadWriter)(RequestData)  {
+	log.Print("Processing Header Line\n")
 	data := processHeaderLine(rw)
+	log.Print("Getting Headers\n")
 	data.Headers = getHeaders(rw)
 
 	fmt.Printf("Method: '%s'\nTarget: '%s'\nVersion: '%s'\n", data.HttpMethod, data.RequestTarget, data.HttpVersion)
 
-	for k := range data.Headers {
-		fmt.Printf("Key: '%s'\nValue: '%s'\n", k, data.Headers[k])
-	}
+	//for k := range data.Headers {
+	//	fmt.Printf("Key: '%s'\nValue: '%s'\n", k, data.Headers[k])
+	//}
 
 	return data
 }
@@ -47,7 +49,7 @@ func getHeaders(rw *bufio.ReadWriter)(map[string]string)  {
 	for scanner.Scan() {
 		lineText := scanner.Text()
 
-		if lineText == "" {
+		if lineText == "" || strings.ContainsRune(lineText, '\r') {
 			break
 		}
 
@@ -63,6 +65,9 @@ func getHeaders(rw *bufio.ReadWriter)(map[string]string)  {
 
 		splitHeaders := strings.SplitN(lineText, delim, 2)
 		results[splitHeaders[0]] = splitHeaders[1]
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Printf("Invalid input: %s", err)
 	}
 
 	return results

@@ -10,6 +10,7 @@ type ResponseData struct {
 	HttpVersion string
 	ResponseCode int 
 	ResponsePhrase string
+	Headers map[string]string
 }
 
 type RequestData struct {
@@ -21,7 +22,6 @@ type RequestData struct {
 
 func main() {
 	runMainServer()
-
 }
 
 func runMainServer() {
@@ -50,9 +50,12 @@ func handleConnection(ln net.Listener, conn net.Conn) {
 
 	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
 
+	log.Print("Parsing Request\n")
 	reqData := parseRequest(rw)
+	log.Print("Validating Headers\n")
 	statusCode, statusMessage := validateHeaderRecords(&reqData)
 
+	log.Print("Building Response\n")
 	buildResponse(&reqData, statusCode, statusMessage, rw)
 }
 
