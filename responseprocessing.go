@@ -20,8 +20,6 @@ func buildResponse(reqData *RequestData, statusCode int, statusMessage string, r
 	data, err := processRequest(reqData, &respData)
 
 	writeStandardHeaders(reqData, &respData, processTime, rw)
-
-	//return headers go here
 	writeResponseDataHeaders(rw, &respData)
 
 	rw.Write([]byte("\r\n"))
