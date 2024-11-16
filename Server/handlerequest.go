@@ -7,7 +7,8 @@ import (
 )
 
 func handleRequest(reqData *RequestData) ([]byte, map[string]string, error) {
-	if reqData.RequestTarget == "/" {
+	if reqData.RequestTarget == "/" ||
+		reqData.RequestTarget == "" {
 		data, headers := getIndex()
 		return data, headers, nil
 	}

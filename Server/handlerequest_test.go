@@ -14,3 +14,40 @@ func TestGetIndex(t *testing.T) {
 		t.Error("Hello world not found.")
 	}
 }
+
+
+func TestHandleRequest(t *testing.T) {
+	tt := []struct {
+		Name string
+		Route string
+		WantErr bool
+	}{
+		{
+			"Handle Request Should error on foo",
+			"/foo",
+			true,
+		},
+		{
+			"Handle Request Should not error on slash",
+			"/",
+			false,
+		},
+		{
+			"Handle Request Should not error on empty string",
+			"",
+			false,
+		},
+	}
+
+	for _, tc := range tt {
+
+		t.Run(tc.Name, func(t *testing.T) {
+			data := RequestData{
+				RequestTarget: tc.Route,
+			}
+			_, _, err := handleRequest(&data)
+
+			Equal(t, (err != nil), tc.WantErr)
+		})
+	}
+}
