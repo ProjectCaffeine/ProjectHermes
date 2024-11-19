@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"html/template"
+	"strconv"
 )
 
 func handleRequest(reqData *RequestData) ([]byte, map[string]string, error) {
@@ -18,8 +19,7 @@ func handleRequest(reqData *RequestData) ([]byte, map[string]string, error) {
 
 func getIndex() ([]byte, map[string]string) {
 	headers := make(map[string]string)
-	const tpl = `
-		<!DOCTYPE html>
+	const tpl = `<!DOCTYPE html>
 		<html>
 		<head>
 		<meta charset="UTF-8">
@@ -39,6 +39,7 @@ func getIndex() ([]byte, map[string]string) {
 	checkForError(err)
 
 	headers["Content-Type"] = "text/html; charset=utf-8"
+	headers["Content-Length"] = strconv.Itoa(bf.Len())
 
 	return bf.Bytes(), headers
 }

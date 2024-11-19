@@ -15,17 +15,25 @@ func buildResponse(reqData *RequestData, statusCode int, statusMessage string, r
 	respData.ResponseCode = statusCode
 	respData.ResponsePhrase = statusMessage
 	respData.HttpVersion = reqData.HttpVersion
-
+ 
 	processTime := time.Now().UTC()
-	data, err := processRequest(reqData, &respData)
+	var data []byte
+	var err error
 
+	fmt.Printf("Status code: %d", statusCode)
+
+	if statusCode != 405 {
+		data, err = processRequest(reqData, &respData)
+	}
+
+	fmt.Print("Writing standard headers")
 	writeStandardHeaders(reqData, &respData, processTime, rw)
+	fmt.Print("Writing response headers")
 	writeResponseDataHeaders(rw, &respData)
 
 	rw.Write([]byte("\r\n"))
-	rw.Write([]byte("\n"))
 	
-	if err == nil {
+	if err == nil && statusCode != 405 {
 		rw.Write(data)
 	}
 
@@ -52,16 +60,19 @@ func writeStandardHeaders(reqData *RequestData, respData *ResponseData, processT
 	rw.Write([]byte(" " + strconv.Itoa(respData.ResponseCode)))
 	rw.Write([]byte(" " + respData.ResponsePhrase))
 	rw.Write([]byte("\n"))
-	rw.Write([]byte("HTTP-date = " + processTime.Format(time.RFC1123)))
+	rw.Write([]byte("Date: " + processTime.Format(time.RFC1123)))
 	rw.Write([]byte("\n"))
 }
 
 func writeResponseDataHeaders(rw *bufio.ReadWriter, respData *ResponseData) {
 	if respData.ResponseCode == 405 {
-		rw.Write([]byte("Allow: GET"))
+		rw.Write([]byte("Allow: GET\n"))
+		rw.Write([]byte("Content-Length: 0\n"))
 	}
 
-	for v := range maps.Keys(respData.Headers) {
-		rw.Write([]byte(fmt.Sprintf("%s: %s", v, respData.Headers[v])))
+	if respData.Headers != nil {
+		for v := range maps.Keys(respData.Headers) {
+			rw.Write([]byte(fmt.Sprintf("%s: %s\n", v, respData.Headers[v])))
+		}
 	}
 }

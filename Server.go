@@ -62,7 +62,7 @@ func handleConnection(ln net.Listener, conn net.Conn) {
 
 
 func validateHeaderRecords(data *RequestData) (int, string)  {
-	if data.HttpMethod != "GET" {
+	if data.HttpMethod != "GET" && data.HttpMethod != "POST" {
 		return 405, "Method Not Allowed"
 	}
 
