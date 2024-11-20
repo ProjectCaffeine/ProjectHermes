@@ -24,6 +24,7 @@ type RequestData struct {
 	RequestTarget string 
 	HttpVersion string
 	Headers map[string]string
+	body []byte
 }
 
 func main() {

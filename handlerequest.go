@@ -2,23 +2,47 @@ package main
 
 import (
 	"bytes"
-	"errors"
+	"encoding/json"
+	"fmt"
 	"html/template"
+	"log"
 	"strconv"
 )
 
-func handleRequest(reqData *RequestData) ([]byte, map[string]string, error) {
+func handleRequest(reqData *RequestData, respData *ResponseData) []byte {
 	if reqData.RequestTarget == "/" ||
 		reqData.RequestTarget == "" {
 		data, headers := getIndex()
-		return data, headers, nil
+
+		respData.Headers  = headers
+		return data
+	}
+
+	if reqData.RequestTarget == "/User" && reqData.HttpMethod == "POST" {
+		createUser(reqData)
+
+		respData.ResponsePhrase = "Created"
+		respData.ResponseCode = 201
+		return nil
+
 	}
 	
-	return nil, nil, errors.New("Request Target not found")
+	respData.ResponseCode = 404
+	respData.ResponsePhrase = "Not found"
+
+	return nil
 }
 
-func createUser() {
+func createUser(reqData *RequestData) {
+	user := User{}
 
+	err := json.Unmarshal(reqData.body, &user)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("\nUser name:%s\nUser email:%s\n", user.Name, user.Email)
 }
 
 func getIndex() ([]byte, map[string]string) {

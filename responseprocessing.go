@@ -18,22 +18,20 @@ func buildResponse(reqData *RequestData, statusCode int, statusMessage string, r
  
 	processTime := time.Now().UTC()
 	var data []byte
-	var err error
 
-	fmt.Printf("Status code: %d\n", statusCode)
-
-	if statusCode != 405 && reqData.RequestTarget != "/User" {
-		data, err = processRequest(reqData, &respData)
+	if statusCode != 405 {
+		data, _ = processRequest(reqData, &respData)
 	}
 
-	fmt.Print("Writing standard headers")
+	fmt.Print("Writing standard headers\n")
 	writeStandardHeaders(reqData, &respData, processTime, rw)
-	fmt.Print("Writing response headers")
+	fmt.Print("Writing response headers\n")
 	writeResponseDataHeaders(rw, &respData)
 
 	rw.Write([]byte("\r\n"))
 	
-	if err == nil && statusCode != 405 && len(data) > 0{
+	//if err == nil && statusCode != 405 && len(data) > 0{
+	if data != nil && len(data) > 0{
 		rw.Write(data)
 	}
 
@@ -41,16 +39,11 @@ func buildResponse(reqData *RequestData, statusCode int, statusMessage string, r
 }
 
 func processRequest(reqData *RequestData, respData *ResponseData) ([]byte, error) {
-	data, headers, err := handleRequest(reqData)
+	data := handleRequest(reqData, respData)
 
-	if err != nil {
-		respData.ResponseCode = 404
-		respData.ResponsePhrase = "Not Found"
-
+	if respData.ResponseCode == 404 {
 		return nil, errors.New("Request Target not found")
 	}
-
-	respData.Headers = headers
 
 	return data, nil
 }
