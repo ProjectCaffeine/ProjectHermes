@@ -2,9 +2,15 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"log"
 	"net"
 )
+
+type User struct {
+	Name string 
+	Email string
+}
 
 type ResponseData struct {
 	HttpVersion string
@@ -44,10 +50,27 @@ func runMainServer() {
 	}
 }
  
+func printEntireRequest(conn net.Conn) {
+
+	// Create a buffer to read data into
+	buffer := make([]byte, 4096)
+
+	for {
+		// Read data from the client
+		n, err := conn.Read(buffer)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
+
+		// Process and use the data (here, we'll just print it)
+		fmt.Printf("Received: \n%q\n", buffer[:n])
+	}
+}
 
 func handleConnection(ln net.Listener, conn net.Conn) {
 	defer conn.Close()
-
+	//printEntireRequest(conn);
 	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
 
 	log.Print("Parsing Request\n")

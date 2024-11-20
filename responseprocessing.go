@@ -20,9 +20,9 @@ func buildResponse(reqData *RequestData, statusCode int, statusMessage string, r
 	var data []byte
 	var err error
 
-	fmt.Printf("Status code: %d", statusCode)
+	fmt.Printf("Status code: %d\n", statusCode)
 
-	if statusCode != 405 {
+	if statusCode != 405 && reqData.RequestTarget != "/User" {
 		data, err = processRequest(reqData, &respData)
 	}
 
@@ -33,7 +33,7 @@ func buildResponse(reqData *RequestData, statusCode int, statusMessage string, r
 
 	rw.Write([]byte("\r\n"))
 	
-	if err == nil && statusCode != 405 {
+	if err == nil && statusCode != 405 && len(data) > 0{
 		rw.Write(data)
 	}
 

@@ -17,6 +17,10 @@ func handleRequest(reqData *RequestData) ([]byte, map[string]string, error) {
 	return nil, nil, errors.New("Request Target not found")
 }
 
+func createUser() {
+
+}
+
 func getIndex() ([]byte, map[string]string) {
 	headers := make(map[string]string)
 	const tpl = `<!DOCTYPE html>
