@@ -24,13 +24,47 @@ func handleRequest(reqData *RequestData, respData *ResponseData) []byte {
 		respData.ResponsePhrase = "Created"
 		respData.ResponseCode = 201
 		return nil
+	}
 
+	if reqData.RequestTarget == "/User" && reqData.HttpMethod == "GET" {
+		return getUser(reqData, respData)
 	}
 	
 	respData.ResponseCode = 404
 	respData.ResponsePhrase = "Not found"
 
 	return nil
+}
+
+type JsonError struct {
+	Error string
+}
+
+func getUser(reqData *RequestData, respData *ResponseData) []byte {
+	id, hasKey := reqData.UrlQuerys["id"]
+	if !hasKey {
+		respData.ResponseCode = 400
+		respData.ResponsePhrase = "Bad Request"
+
+		jError := JsonError{Error: "Id is not present in query."}
+
+		data, err := json.Marshal(jError)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		return data
+	}
+
+	user := User{Name: "John", Email: "Test@Test.com", Id: id}
+	data, err := json.Marshal(user)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return data
 }
 
 func createUser(reqData *RequestData) {

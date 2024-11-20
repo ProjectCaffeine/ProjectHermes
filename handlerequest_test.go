@@ -45,9 +45,11 @@ func TestHandleRequest(t *testing.T) {
 			data := RequestData{
 				RequestTarget: tc.Route,
 			}
-			_, _, err := handleRequest(&data)
+			respData := ResponseData{}
 
-			Equal(t, (err != nil), tc.WantErr)
+			handleRequest(&data, &respData)
+
+			Equal(t, (respData.ResponseCode == 404), tc.WantErr)
 		})
 	}
 }

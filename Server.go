@@ -10,6 +10,7 @@ import (
 type User struct {
 	Name string 
 	Email string
+	Id string
 }
 
 type ResponseData struct {
@@ -24,6 +25,7 @@ type RequestData struct {
 	RequestTarget string 
 	HttpVersion string
 	Headers map[string]string
+	UrlQuerys map[string]string
 	body []byte
 }
 

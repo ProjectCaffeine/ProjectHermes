@@ -16,14 +16,50 @@ func parseRequest(rw *bufio.ReadWriter)(RequestData)  {
 
 	fmt.Printf("\n\nMethod: '%s'\nTarget: '%s'\nVersion: '%s'\n\n", data.HttpMethod, data.RequestTarget, data.HttpVersion)
 
-	data.body = getBody(rw, data.Headers["Content-Length"])
+	_, hasKey := data.Headers["Content-Length"]
+
+	if hasKey {
+		data.body = getBody(rw, data.Headers["Content-Length"])
+	}
 
 	//for k := range data.Headers {
 	//	fmt.Printf("Key: '%s'\nValue: '%s'\n", k, data.Headers[k])
 	//}
+	parseUrl(&data)
 
+	//for k := range data.UrlQuerys {
+	//	fmt.Printf("Key: '%s'\nValue: '%s'\n", k, data.UrlQuerys[k])
+	//}
 
 	return data
+}
+
+func parseUrl(reqData *RequestData) {
+	reqData.UrlQuerys = getQueryParameters(reqData.RequestTarget)
+
+	if len(reqData.UrlQuerys) > 0 {
+		reqData.RequestTarget = strings.Split(reqData.RequestTarget, "?")[0]
+	}
+}
+
+func getQueryParameters(requestTarget string) map[string]string {
+	params := make(map[string]string)
+
+	if !strings.Contains(requestTarget, "?") {
+		return params
+	}
+
+
+	querySection := strings.Split(requestTarget, "?")[1]
+	querys := strings.Split(querySection, "&")
+
+	for _, q := range querys {
+		splitQuery := strings.Split(q, "=")
+
+		params[splitQuery[0]] = splitQuery[1]
+	}
+
+	return params
 }
 
 func getBody(rw *bufio.ReadWriter, cl string) []byte {
