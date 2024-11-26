@@ -2,10 +2,12 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
+	"os"
 	"strconv"
 )
 
@@ -26,6 +28,15 @@ func handleRequest(reqData *RequestData, respData *ResponseData) []byte {
 		return nil
 	}
 
+	if reqData.RequestTarget == "/Files" && reqData.HttpMethod == "POST" {
+		responseCode, responsePhrase := saveFile(reqData)
+
+		respData.ResponsePhrase = responsePhrase
+		respData.ResponseCode = responseCode
+
+		return nil
+	}
+
 	if reqData.RequestTarget == "/User" && reqData.HttpMethod == "GET" {
 		return getUser(reqData, respData)
 	}
@@ -38,6 +49,43 @@ func handleRequest(reqData *RequestData, respData *ResponseData) []byte {
 
 type JsonError struct {
 	Error string
+}
+
+func saveFile(reqData *RequestData) (int, string) {
+	file, err := os.Create("./test.txt")
+
+	if err != nil {
+		//handle error
+		return 500, "Internal Server Error"
+	}
+
+	val, ok := reqData.Headers["Content-Type"]
+
+	if !ok {
+		return 400, "Internal Server Error"
+	}
+
+	if val == "application/json" {
+		data := make([]byte, 1024)
+
+		n, err := base64.RawStdEncoding.Decode(data, reqData.body)
+
+		if err != nil {
+			//handle error
+			return 500, "Internal Server Error"
+		}
+
+		writtenLen, err := file.Write(data[:n])
+
+		if err != nil && writtenLen != n {
+			//handle error
+			return 500, "Internal Server Error"
+		}
+	}
+
+	file.Close()
+
+	return 200, "Ok"
 }
 
 func getUser(reqData *RequestData, respData *ResponseData) []byte {

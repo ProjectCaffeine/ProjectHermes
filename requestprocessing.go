@@ -20,11 +20,13 @@ func parseRequest(rw *bufio.ReadWriter)(RequestData)  {
 
 	if hasKey {
 		data.body = getBody(rw, data.Headers["Content-Length"])
+
+		fmt.Printf("Body:\n%s\n", string(data.body))
 	}
 
-	//for k := range data.Headers {
-	//	fmt.Printf("Key: '%s'\nValue: '%s'\n", k, data.Headers[k])
-	//}
+	for k := range data.Headers {
+		fmt.Printf("Key: '%s'\nValue: '%s'\n", k, data.Headers[k])
+	}
 	parseUrl(&data)
 
 	//for k := range data.UrlQuerys {
